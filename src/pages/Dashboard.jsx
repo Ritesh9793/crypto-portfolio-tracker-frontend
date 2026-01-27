@@ -9,6 +9,7 @@ import {
 } from "recharts";
 import api from "../api/axios";
 import AIAssistant from "../components/AiAssistant";
+import Sparkline from "../components/Sparkline";
 import DashboardLayout from "../layout/DashboardLayout";
 
 export default function Dashboard() {
@@ -25,49 +26,60 @@ export default function Dashboard() {
 
   /* ---------------- FETCH DATA ---------------- */
   useEffect(() => {
-  Promise.allSettled([
-    api.get("/api/dashboard/summary"),
-    api.get("/api/holdings"),
-    api.get("/api/pricing"),
-    api.get("/api/market/coins"),
-    api.get("/api/trades/get-trades"),
-    api.get("/api/pnl"),
-    api.get("/api/notifications"),
-    api.get("/api/prices"),
-  ])
-    .then((results) => {
-      const [
-        summaryRes,
-        holdingsRes,
-        pricingRes,
-        marketCoinsRes,
-        tradesRes,
-        pnlRes,
-        notificationsRes,
-        priceHistoryRes,
-      ] = results;
+    Promise.allSettled([
+      api.get("/api/dashboard/summary"),
+      api.get("/api/holdings"),
+      api.get("/api/pricing"),
+      api.get("/api/market/coins"),
+      api.get("/api/trades/get-trades"),
+      api.get("/api/pnl"),
+      api.get("/api/notifications"),
+      api.get("/api/prices"),
+    ])
+      .then((results) => {
+        const [
+          summaryRes,
+          holdingsRes,
+          pricingRes,
+          marketCoinsRes,
+          tradesRes,
+          pnlRes,
+          notificationsRes,
+          priceHistoryRes,
+        ] = results;
 
-      setSummary(summaryRes.status === "fulfilled" ? summaryRes.value.data : {});
-      setHoldings(holdingsRes.status === "fulfilled" ? holdingsRes.value.data : []);
-      setPricing(pricingRes.status === "fulfilled" ? pricingRes.value.data : []);
-      setRiskCoins(marketCoinsRes.status === "fulfilled" ? marketCoinsRes.value.data : []);
-      setTrades(tradesRes.status === "fulfilled" ? tradesRes.value.data : []);
-      setPnl(pnlRes.status === "fulfilled" ? pnlRes.value.data : null);
-      setNotifications(
-        notificationsRes.status === "fulfilled" ? notificationsRes.value.data : []
-      );
-      setPriceHistory(
-        priceHistoryRes.status === "fulfilled" ? priceHistoryRes.value.data : []
-      );
-    })
-    .catch((err) => {
-      console.error("Dashboard load error", err);
-    })
-    .finally(() => setLoading(false));
-}, []);
-
-
-
+        setSummary(
+          summaryRes.status === "fulfilled" ? summaryRes.value.data : {},
+        );
+        setHoldings(
+          holdingsRes.status === "fulfilled" ? holdingsRes.value.data : [],
+        );
+        setPricing(
+          pricingRes.status === "fulfilled" ? pricingRes.value.data : [],
+        );
+        setRiskCoins(
+          marketCoinsRes.status === "fulfilled"
+            ? marketCoinsRes.value.data
+            : [],
+        );
+        setTrades(tradesRes.status === "fulfilled" ? tradesRes.value.data : []);
+        setPnl(pnlRes.status === "fulfilled" ? pnlRes.value.data : null);
+        setNotifications(
+          notificationsRes.status === "fulfilled"
+            ? notificationsRes.value.data
+            : [],
+        );
+        setPriceHistory(
+          priceHistoryRes.status === "fulfilled"
+            ? priceHistoryRes.value.data
+            : [],
+        );
+      })
+      .catch((err) => {
+        console.error("Dashboard load error", err);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   /* ---------------- HOLDINGS MAP ---------------- */
   const holdingMap = useMemo(() => {
@@ -459,6 +471,7 @@ export default function Dashboard() {
                   <th className="pb-4">Symbol</th>
                   <th className="pb-4">Price</th>
                   <th className="pb-4">Change %</th>
+                  <th className="pb-4">7D </th>
                 </tr>
               </thead>
               <tbody>
@@ -470,11 +483,17 @@ export default function Dashboard() {
                     <td className="py-4 font-semibold">{p.symbol}</td>
                     <td>${Number(p.priceUsd).toLocaleString("en-IN")}</td>
                     <td
-                      className={
-                        p.changePercent >= 0 ? "text-green-400" : "text-red-400"
-                      }
+                      className={`font-semibold ${
+                        p.change24h >= 0 ? "text-green-400" : "text-red-400"
+                      }`}
                     >
-                      {p.changePercent}%
+                      {p.change24h.toFixed(2)}%
+                    </td>
+                    <td>
+                      <Sparkline
+                        data={p.sparkline}
+                        positive={p.change24h >= 0}
+                      />
                     </td>
                   </tr>
                 ))}
