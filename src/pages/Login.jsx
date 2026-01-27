@@ -9,6 +9,10 @@ export default function Login() {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
+    if(!email || !password){
+      alert("Please fill all required fields");
+      return;
+    }
     try {
       const res = await api.post("/api/auth/login", { email, password });
       if (res.data.token) {
@@ -167,7 +171,6 @@ function Input({ label, type = "text", placeholder, onChange }) {
         type={type}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        required
         className="w-full p-3 rounded-lg bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
       />
     </div>
@@ -186,7 +189,6 @@ function PasswordInput({ label, placeholder, onChange }) {
           type={show ? "text" : "password"}
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
-          required
           className="w-full p-3 pr-10 rounded-lg bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
         />
 
@@ -201,4 +203,5 @@ function PasswordInput({ label, placeholder, onChange }) {
     </div>
   );
 }
+
 
