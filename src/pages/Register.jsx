@@ -100,11 +100,9 @@ export default function Register() {
               placeholder="Re-enter your password"
               onChange={setConfirmPassword}
             />
-
             <button
               type="submit"
               disabled={loading || success}
-              <Link to="/dashboard"></Link>
               className="w-full mt-6 py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 font-semibold hover:opacity-90 transition disabled:opacity-60"
             >
               {loading ? "Creating Account..." : "Create Account"}
@@ -184,4 +182,5 @@ function PasswordInput({ label, placeholder, onChange }) {
     </div>
   );
 }
+
 
