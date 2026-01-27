@@ -26,6 +26,10 @@ export default function Login() {
     }
   };
 
+  const handleTryDemo = () => {
+    navigate("/demo-login");
+  };
+
   return (
     <div className="min-h-screen flex bg-black text-white">
       {/* LEFT SECTION */}
@@ -195,3 +199,4 @@ function PasswordInput({ label, placeholder, onChange }) {
     </div>
   );
 }
+
