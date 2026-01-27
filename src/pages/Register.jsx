@@ -14,6 +14,11 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
 
+    if(!name || !email || !password){
+      alert("Please fill all required fields");
+      return;
+    }
+
     if (password !== confirmPassword) {
       alert("Passwords do not match");
       return;
@@ -149,7 +154,6 @@ function Input({ label, type = "text", placeholder, onChange }) {
       <input
         type={type}
         placeholder={placeholder}
-        required
         onChange={(e) => onChange(e.target.value)}
         className="w-full p-3 rounded-lg bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
       />
@@ -168,7 +172,6 @@ function PasswordInput({ label, placeholder, onChange }) {
         <input
           type={show ? "text" : "password"}
           placeholder={placeholder}
-          required
           onChange={(e) => onChange(e.target.value)}
           className="w-full p-3 pr-10 rounded-lg bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
         />
@@ -184,6 +187,7 @@ function PasswordInput({ label, placeholder, onChange }) {
     </div>
   );
 }
+
 
 
 
