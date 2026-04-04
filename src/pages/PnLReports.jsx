@@ -33,45 +33,22 @@ export default function PnLReport() {
   }, []);
 
   /* ---------------- EXPORT CSV ---------------- */
-  const exportToCSV = () => {
-    if (!summary || !summary.assets || summary.assets.length === 0) {
-      alert("No P&L data to export");
-      return;
+  const exportToCSV = async () => {
+    try {
+      const res = await api.get("/api/pnl/export", {
+        responseType: "blob"
+      });
+
+      const url = URL.createObjectURL(res.data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "pnl-report.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("CSV export failed", err);
+      alert("Failed to export CSV");
     }
-
-    const headers = [
-      "Asset",
-      "Quantity",
-      "Avg Buy Price (INR)",
-      "Current Price (INR)",
-      "Unrealized P&L (INR)",
-      "Realized P&L (INR)"
-    ];
-
-    const rows = summary.assets.map((p) => [
-      p.asset,
-      p.quantity,
-      p.avgBuyPrice,
-      p.currentPrice,
-      p.unrealizedPnL,
-      p.realizedPnL
-    ]);
-
-    let csvContent =
-      headers.join(",") + "\n" +
-      rows.map((row) => row.join(",")).join("\n");
-
-    const blob = new Blob([csvContent], {
-      type: "text/csv;charset=utf-8;"
-    });
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "pnl_report.csv";
-    link.click();
-
-    URL.revokeObjectURL(url);
   };
 
   if (loading) {

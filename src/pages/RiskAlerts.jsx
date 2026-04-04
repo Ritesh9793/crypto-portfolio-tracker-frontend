@@ -1,202 +1,117 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../api/axios";
 import DashboardLayout from "../layout/DashboardLayout";
-import {
-  HighRiskTrend,
-  MediumRiskTrend,
-  LowRiskTrend,
-} from "../components/RiskTrend";
 
-import PriceHistoryChart from "../components/PriceHistoryChart";
-
-<PriceHistoryChart asset="BTC" />
-
-export default function RiskAlerts() {
-  const [coins, setCoins] = useState([]);
-  const [selectedRisk, setSelectedRisk] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  /* ---------------- FETCH MARKET DATA (BACKEND PROXY) ---------------- */
-  const fetchCoins = async () => {
-  setLoading(true);
-  try {
-    const res = await api.get("/api/market/coins");
-    setCoins(res.data || []);
-  } catch (err) {
-    console.error("Market API error:", err);
-    setCoins([]);
-  } finally {
-    setLoading(false);
-  }
+const riskPalette = {
+  HIGH: "bg-red-500/10 text-red-400 border-red-500/20",
+  MEDIUM: "bg-yellow-500/10 text-yellow-300 border-yellow-500/20",
+  LOW: "bg-green-500/10 text-green-400 border-green-500/20",
 };
 
+export default function RiskAlerts() {
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedRisk, setSelectedRisk] = useState("ALL");
 
   useEffect(() => {
-    fetchCoins();
+    const fetchAlerts = async () => {
+      setLoading(true);
+      try {
+        const res = await api.get("/api/risk-alerts");
+        setAlerts(res.data || []);
+      } catch (err) {
+        console.error("Risk alert fetch error:", err);
+        setAlerts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAlerts();
   }, []);
 
-  /* ---------------- RISK CLASSIFICATION ---------------- */
-  const classifyRisk = (coin) => {
-    const change = Math.abs(coin.price_change_percentage_24h || 0);
+  const filteredAlerts = useMemo(() => {
+    if (selectedRisk === "ALL") {
+      return alerts;
+    }
+    return alerts.filter((alert) => alert.riskLevel === selectedRisk);
+  }, [alerts, selectedRisk]);
 
-    if (change >= 10 || coin.market_cap < 1_000_000_000) return "HIGH";
-    if (change >= 5) return "MEDIUM";
-    return "LOW";
-  };
-
-  /* ---------------- FILTERED COINS ---------------- */
-  const filteredCoins = coins.filter(
-    (coin) => classifyRisk(coin) === selectedRisk
+  const riskCounts = useMemo(
+    () => ({
+      HIGH: alerts.filter((alert) => alert.riskLevel === "HIGH").length,
+      MEDIUM: alerts.filter((alert) => alert.riskLevel === "MEDIUM").length,
+      LOW: alerts.filter((alert) => alert.riskLevel === "LOW").length,
+    }),
+    [alerts]
   );
-
-  /* ---------------- INR FORMAT HELPERS ---------------- */
-  const formatINR = (value) =>
-    new Intl.NumberFormat("en-IN", {
-      maximumFractionDigits: 0,
-    }).format(value * 83); // USD → INR approx
 
   return (
     <DashboardLayout>
       <div className="p-10 text-white min-h-screen cyberpunk-bg">
-
-        {/* HEADER */}
         <div className="mb-10">
-          <h1 className="text-4xl font-bold tracking-wide">
-            Risk Alerts
-          </h1>
+          <h1 className="text-4xl font-bold tracking-wide">Risk Alerts</h1>
           <p className="text-gray-400 mt-2">
-            Portfolio risk classification based on real-time market behavior
+            Backend-generated volatility and market-cap alerts aligned to the assignment risk module.
           </p>
         </div>
 
-        {/* ---------------- RISK OVERVIEW ---------------- */}
-        {!selectedRisk && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-            {/* HIGH RISK */}
-            <div
-              onClick={() => setSelectedRisk("HIGH")}
-              className="risk-card hover:shadow-red-500/40"
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          {["ALL", "HIGH", "MEDIUM", "LOW"].map((riskLevel) => (
+            <button
+              key={riskLevel}
+              onClick={() => setSelectedRisk(riskLevel)}
+              className={`rounded-2xl border px-5 py-4 text-left ${
+                riskLevel === "ALL"
+                  ? "border-white/10 bg-white/5"
+                  : riskPalette[riskLevel]
+              } ${selectedRisk === riskLevel ? "ring-2 ring-pink-400/70" : ""}`}
             >
-              <HighRiskTrend />
-              <h2 className="text-2xl font-bold mt-4">High Risk</h2>
-              <p className="text-gray-400 mt-2">
-                Highly volatile / sharp price movements
-              </p>
-            </div>
+              <div className="text-sm text-gray-400">{riskLevel === "ALL" ? "All alerts" : `${riskLevel} risk`}</div>
+              <div className="text-2xl font-semibold mt-2">
+                {riskLevel === "ALL"
+                  ? alerts.length
+                  : riskCounts[riskLevel]}
+              </div>
+            </button>
+          ))}
+        </div>
 
-            {/* MEDIUM RISK */}
-            <div
-              onClick={() => setSelectedRisk("MEDIUM")}
-              className="risk-card hover:shadow-yellow-400/40"
-            >
-              <MediumRiskTrend />
-              <h2 className="text-2xl font-bold mt-4">Medium Risk</h2>
-              <p className="text-gray-400 mt-2">
-                Moderate or unstable movement
-              </p>
-            </div>
+        {loading ? (
+          <p className="text-gray-400">Loading risk alerts...</p>
+        ) : filteredAlerts.length === 0 ? (
+          <p className="text-gray-400">No alerts found for the selected risk level.</p>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {filteredAlerts.map((alert, index) => (
+              <div
+                key={`${alert.symbol}-${index}`}
+                className="rounded-2xl border border-white/10 bg-black/30 p-5"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-lg font-semibold">
+                      {alert.asset} ({alert.symbol?.toUpperCase()})
+                    </div>
+                    <div className="text-sm text-gray-400 mt-1">{alert.reason}</div>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full border text-xs font-semibold ${riskPalette[alert.riskLevel]}`}>
+                    {alert.riskLevel}
+                  </span>
+                </div>
 
-            {/* LOW RISK */}
-            <div
-              onClick={() => setSelectedRisk("LOW")}
-              className="risk-card hover:shadow-green-400/40"
-            >
-              <LowRiskTrend />
-              <h2 className="text-2xl font-bold mt-4">Low Risk</h2>
-              <p className="text-gray-400 mt-2">
-                Stable & blue-chip assets
-              </p>
-            </div>
-
+                <div className="mt-4 grid gap-2 text-sm text-gray-300">
+                  <div>
+                    <span className="text-gray-500">Alert type:</span> {alert.alertType || "contract_risk"}
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Source:</span> {alert.source || "Internal analysis"}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
-
-        {/* ---------------- ASSET GRID ---------------- */}
-        {selectedRisk && (
-          <>
-            <button
-  onClick={() => setSelectedRisk(null)}
-  className="
-    mb-8
-    flex items-center gap-2
-    px-5 py-2.5
-    rounded-lg
-    bg-slate-800 hover:bg-slate-700
-    border border-white/10
-    text-gray-200
-    transition-all
-  "
->
-  ← Back to Risk Overview
-</button>
-
-
-            {loading ? (
-              <p className="text-gray-400">Loading assets...</p>
-            ) : filteredCoins.length === 0 ? (
-              <p className="text-gray-400">
-                No assets found for this risk category.
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-
-                {filteredCoins.map((coin) => (
-                  <div key={coin.id} className="asset-card relative">
-
-                    {/* RISK BADGE */}
-                    <span
-                      className={`absolute top-4 right-4 text-xs px-3 py-1 rounded-full ${
-                        selectedRisk === "HIGH"
-                          ? "bg-red-500/10 text-red-400"
-                          : selectedRisk === "MEDIUM"
-                          ? "bg-yellow-400/10 text-yellow-300"
-                          : "bg-green-500/10 text-green-400"
-                      }`}
-                    >
-                      {selectedRisk} RISK
-                    </span>
-
-                    <img
-                      src={coin.image}
-                      alt={coin.name}
-                      className="w-12 h-12 mb-4"
-                    />
-
-                    <h3 className="text-lg font-semibold">
-                      {coin.name}
-                    </h3>
-
-                    <p className="text-gray-400 text-sm">
-                      {coin.symbol.toUpperCase()}
-                    </p>
-
-                    <p className="mt-4 text-2xl font-bold text-white">
-                      ₹{formatINR(coin.current_price)}
-                    </p>
-
-                    <p
-                      className={`mt-1 text-sm font-medium ${
-                        coin.price_change_percentage_24h >= 0
-                          ? "text-green-400"
-                          : "text-red-400"
-                      }`}
-                    >
-                      {coin.price_change_percentage_24h?.toFixed(2)}% (24h)
-                    </p>
-
-                    <p className="text-xs text-gray-500 mt-4">
-                      MCap ₹{formatINR(coin.market_cap)}
-                    </p>
-
-                  </div>
-                ))}
-
-              </div>
-            )}
-          </>
-        )}
-
       </div>
     </DashboardLayout>
   );

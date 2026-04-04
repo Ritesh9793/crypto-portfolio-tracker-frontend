@@ -14,16 +14,33 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = (newToken) => {
-    setToken(newToken);
+  const login = (authResponse) => {
+    if (!authResponse?.token) {
+      return;
+    }
+
+    setToken(authResponse.token);
     setIsAuthenticated(true);
-    localStorage.setItem("token", newToken);
+    localStorage.setItem("token", authResponse.token);
+
+    if (authResponse.refreshToken) {
+      localStorage.setItem("refreshToken", authResponse.refreshToken);
+    }
+    if (authResponse.email) {
+      localStorage.setItem("userEmail", authResponse.email);
+    }
+    if (authResponse.name) {
+      localStorage.setItem("userName", authResponse.name);
+    }
   };
 
   const logout = () => {
     setToken(null);
     setIsAuthenticated(false);
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
   };
 
   return (
