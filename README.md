@@ -1,70 +1,112 @@
-# Getting Started with Create React App
+# Crypto Portfolio Tracker Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 1. Introduction
+This repository contains the React frontend for the Crypto Portfolio Tracker with Risk and Scam Analysis project. It delivers the user-facing dashboard for authentication, holdings, trade management, pricing views, risk alerts, exchange connections, notifications, profile management, and report exports.
 
-## Available Scripts
+## 2. Overview
+The frontend provides:
 
-In the project directory, you can run:
+- login, registration, and refresh-token aware session handling
+- a dashboard view for portfolio summary and recent activity
+- exchange connection forms for linking supported exchanges
+- holdings, trades, pricing, and history views
+- backend-driven risk alert presentation
+- P&L and tax report screens with CSV export
+- AI assistant and notification interfaces
 
-### `npm start`
+## 3. Tech Stack
+- React
+- React Router
+- Axios
+- Tailwind CSS
+- Recharts
+- React Hot Toast
+- Lucide React
+- Create React App tooling
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 4. Architecture
+The frontend is organized into:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- `pages` for route-level screens such as Dashboard, Holdings, Trades, Pricing, Risk Alerts, P&L Reports, Login, and Register
+- `components` for reusable UI sections such as the exchange settings panel, notifications, charts, layout wrappers, and assistant widgets
+- `context` for authentication and demo mode state
+- `api` for Axios configuration and request helpers
 
-### `npm test`
+High-level flow:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Users authenticate against the backend auth APIs.
+2. Access and refresh tokens are stored in the browser.
+3. Axios automatically attaches the access token and retries with refresh flow when needed.
+4. Dashboard pages fetch backend APIs for holdings, prices, risk alerts, notifications, P&L, and profile data.
 
-### `npm run build`
+## 5. APIs
+The frontend consumes these backend API groups:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Authentication
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
+- `POST /api/auth/forgot-password`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Portfolio and Dashboard
+- `GET /api/dashboard/summary`
+- `GET /api/holdings`
+- `GET /api/trades/get-trades`
+- `POST /api/trades/add-trade`
+- `PUT /api/trades/{id}`
+- `DELETE /api/trades/{id}`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Exchange and Pricing
+- `GET /api/exchange-accounts`
+- `POST /api/exchange-accounts`
+- `DELETE /api/exchange-accounts/{exchange}`
+- `GET /api/exchange-accounts/sync/{exchange}`
+- `GET /api/pricing`
+- `GET /api/prices`
+- `GET /api/market/coins`
 
-### `npm run eject`
+### Risk, Reports, and Utilities
+- `GET /api/risk-alerts`
+- `GET /api/pnl`
+- `GET /api/pnl/export`
+- `GET /api/tax/hints`
+- `GET /api/notifications`
+- `GET /api/notifications/unread-count`
+- `POST /api/notifications/{id}/read`
+- `POST /api/notifications/read-all`
+- `GET /api/profile/get-profile`
+- `POST /api/profile/update-profile`
+- `POST /api/profile/change-password`
+- `POST /api/profile/set-preferences`
+- `POST /api/profile/delete-account`
+- `POST /api/ai/chat`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 6. Test Results
+Current local verification status:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- `npm.cmd install` completed successfully
+- `npm.cmd run build` completed successfully
+- production build generated optimized frontend assets on April 4, 2026
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Current note:
+- the build reports one non-blocking ESLint warning in `src/pages/Dashboard.jsx` for an unused variable
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 7. Documentation: Postman & Swagger
+- Swagger UI is not part of the frontend repository because API documentation belongs to the backend service layer.
+- No Postman collection is currently committed in this repository.
+- The frontend route and API usage currently align with the backend endpoints listed above.
 
-## Learn More
+Recommended next step:
+- add linked backend Swagger documentation in the project docs
+- add screenshots or flow diagrams for the main frontend pages
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 8. Future Enhancements
+- improve responsive polish across all dashboard screens
+- connect more exchange-specific onboarding flows
+- add better empty states and error boundaries
+- add automated frontend tests for auth, exchange connections, and reporting
+- add live websocket or polling updates for price and notification refresh
+- align every remaining page with a single consistent design system
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 9. Author - Ritesh Gupta
+- Ritesh Gupta
