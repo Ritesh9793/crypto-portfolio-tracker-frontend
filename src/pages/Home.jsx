@@ -35,7 +35,7 @@ export default function Home() {
       <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-[rgba(226,183,104,0.12)] bg-[linear-gradient(180deg,rgba(34,23,10,0.96),rgba(18,13,8,0.98))] shadow-[0_30px_100px_rgba(0,0,0,0.35)]">
         <header className="border-b border-[rgba(226,183,104,0.1)] px-6 py-5 sm:px-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <BrandMark />
+            <BrandMark src="./Logo.png"/>
             <nav className="flex flex-wrap items-center gap-3">
               <Link
                 to="/login"
